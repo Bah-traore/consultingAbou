@@ -1,3 +1,5 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,8 +11,34 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 import { Award, BookOpen, ClipboardCheck, FileText, Presentation, Target } from "lucide-react";
+import { useRef } from "react";
+import { useInView } from "@/hooks/use-in-view";
 
 export default function Home() {
+  const serviceCard1Ref = useRef<HTMLDivElement | null>(null);
+  const serviceCard2Ref = useRef<HTMLDivElement | null>(null);
+  const serviceCard3Ref = useRef<HTMLDivElement | null>(null);
+  const serviceCard4Ref = useRef<HTMLDivElement | null>(null);
+
+  const valueCard1Ref = useRef<HTMLDivElement | null>(null);
+  const valueCard2Ref = useRef<HTMLDivElement | null>(null);
+  const valueCard3Ref = useRef<HTMLDivElement | null>(null);
+
+  const methodeRef = useRef<HTMLDivElement | null>(null);
+  const contactRef = useRef<HTMLDivElement | null>(null);
+
+  const serviceCard1InView = useInView(serviceCard1Ref, { rootMargin: "0px 0px -15% 0px" });
+  const serviceCard2InView = useInView(serviceCard2Ref, { rootMargin: "0px 0px -15% 0px" });
+  const serviceCard3InView = useInView(serviceCard3Ref, { rootMargin: "0px 0px -15% 0px" });
+  const serviceCard4InView = useInView(serviceCard4Ref, { rootMargin: "0px 0px -15% 0px" });
+
+  const valueCard1InView = useInView(valueCard1Ref, { rootMargin: "0px 0px -15% 0px" });
+  const valueCard2InView = useInView(valueCard2Ref, { rootMargin: "0px 0px -15% 0px" });
+  const valueCard3InView = useInView(valueCard3Ref, { rootMargin: "0px 0px -15% 0px" });
+
+  const methodeInView = useInView(methodeRef, { rootMargin: "0px 0px -15% 0px" });
+  const contactInView = useInView(contactRef, { rootMargin: "0px 0px -15% 0px" });
+
   return (
     <main className="flex-1">
       <header className="relative isolate overflow-hidden py-12 sm:py-16">
@@ -108,7 +136,12 @@ export default function Home() {
         </div>
 
         <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <Card className="group relative overflow-hidden border-border/70 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_50px_-24px_hsl(var(--primary)/0.55)]">
+          <Card
+            ref={serviceCard1Ref}
+            className={`group relative overflow-hidden border-border/70 transition duration-500 will-change-transform will-change-opacity ${
+              serviceCard1InView ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            } hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_50px_-24px_hsl(var(--primary)/0.55)]`}
+          >
             <div className="pointer-events-none absolute -inset-10 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100">
               <div className="absolute inset-0 bg-[radial-gradient(520px_circle_at_25%_20%,hsl(var(--secondary)/0.22),transparent_60%),radial-gradient(520px_circle_at_75%_60%,hsl(var(--primary)/0.18),transparent_62%)]" />
             </div>
@@ -135,7 +168,12 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden border-border/70 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_50px_-24px_hsl(var(--primary)/0.55)]">
+          <Card
+            ref={serviceCard2Ref}
+            className={`group relative overflow-hidden border-border/70 transition duration-500 delay-75 will-change-transform will-change-opacity ${
+              serviceCard2InView ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            } hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_50px_-24px_hsl(var(--primary)/0.55)]`}
+          >
             <div className="pointer-events-none absolute -inset-10 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100">
               <div className="absolute inset-0 bg-[radial-gradient(520px_circle_at_25%_20%,hsl(var(--secondary)/0.22),transparent_60%),radial-gradient(520px_circle_at_75%_60%,hsl(var(--primary)/0.18),transparent_62%)]" />
             </div>
@@ -161,7 +199,12 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden border-border/70 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_50px_-24px_hsl(var(--primary)/0.55)]">
+          <Card
+            ref={serviceCard3Ref}
+            className={`group relative overflow-hidden border-border/70 transition duration-500 delay-150 will-change-transform will-change-opacity ${
+              serviceCard3InView ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            } hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_50px_-24px_hsl(var(--primary)/0.55)]`}
+          >
             <div className="pointer-events-none absolute -inset-10 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100">
               <div className="absolute inset-0 bg-[radial-gradient(520px_circle_at_25%_20%,hsl(var(--secondary)/0.22),transparent_60%),radial-gradient(520px_circle_at_75%_60%,hsl(var(--primary)/0.18),transparent_62%)]" />
             </div>
@@ -187,7 +230,12 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden border-border/70 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_50px_-24px_hsl(var(--primary)/0.55)]">
+          <Card
+            ref={serviceCard4Ref}
+            className={`group relative overflow-hidden border-border/70 transition duration-500 delay-[225ms] will-change-transform will-change-opacity ${
+              serviceCard4InView ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            } hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_50px_-24px_hsl(var(--primary)/0.55)]`}
+          >
             <div className="pointer-events-none absolute -inset-10 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100">
               <div className="absolute inset-0 bg-[radial-gradient(520px_circle_at_25%_20%,hsl(var(--secondary)/0.22),transparent_60%),radial-gradient(520px_circle_at_75%_60%,hsl(var(--primary)/0.18),transparent_62%)]" />
             </div>
@@ -222,7 +270,12 @@ export default function Home() {
       </section>
 
       <section id="methode" className="mt-12 scroll-mt-24">
-        <div className="grid gap-6 rounded-2xl border bg-card p-6 sm:p-8 lg:grid-cols-2 lg:items-center">
+        <div
+          ref={methodeRef}
+          className={`grid gap-6 rounded-2xl border bg-card p-6 transition duration-500 will-change-transform will-change-opacity sm:p-8 lg:grid-cols-2 lg:items-center ${
+            methodeInView ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+          }`}
+        >
           <div className="grid gap-3">
             <h2 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
               Une méthode claire, du diagnostic au résultat
@@ -275,7 +328,12 @@ export default function Home() {
 
       <section className="mt-12">
         <div className="grid gap-6 lg:grid-cols-3">
-          <Card>
+          <Card
+            ref={valueCard1Ref}
+            className={`transition duration-500 will-change-transform will-change-opacity ${
+              valueCard1InView ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            }`}
+          >
             <CardHeader>
               <CardTitle>Une exigence intellectuelle</CardTitle>
               <CardDescription>
@@ -284,7 +342,12 @@ export default function Home() {
             </CardHeader>
           </Card>
 
-          <Card>
+          <Card
+            ref={valueCard2Ref}
+            className={`transition duration-500 delay-75 will-change-transform will-change-opacity ${
+              valueCard2InView ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            }`}
+          >
             <CardHeader>
               <CardTitle>Une pédagogie utile</CardTitle>
               <CardDescription>
@@ -293,7 +356,12 @@ export default function Home() {
             </CardHeader>
           </Card>
 
-          <Card>
+          <Card
+            ref={valueCard3Ref}
+            className={`transition duration-500 delay-150 will-change-transform will-change-opacity ${
+              valueCard3InView ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            }`}
+          >
             <CardHeader>
               <CardTitle>Une finition professionnelle</CardTitle>
               <CardDescription>
@@ -305,7 +373,12 @@ export default function Home() {
       </section>
 
       <section id="contact" className="mt-12 scroll-mt-24 pb-2">
-        <Card className="relative overflow-hidden">
+        <Card
+          ref={contactRef}
+          className={`relative overflow-hidden transition duration-500 will-change-transform will-change-opacity ${
+            contactInView ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+          }`}
+        >
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-foreground/5 via-transparent to-foreground/5" />
           <CardHeader>
             <CardTitle>Prêt à passer à l’action ?</CardTitle>
