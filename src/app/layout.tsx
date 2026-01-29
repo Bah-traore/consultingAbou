@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import InteractiveBackground from "@/components/InteractiveBackground";
 import FloatingActions from "@/components/FloatingActions";
+import FloatingNavMenu from "@/components/FloatingNavMenu";
 import { Button } from "@/components/ui/button";
 
 export default function RootLayout({
@@ -63,6 +64,11 @@ export default function RootLayout({
             whatsappPhone=""
             whatsappMessage="Bonjour, je souhaite en savoir plus sur vos prestations."
             email=""
+          />
+
+          <FloatingNavMenu
+            whatsappPhone="+22370000000"
+            whatsappMessage="Bonjour, je souhaite en savoir plus sur vos prestations."
           />
 
           <footer className="mt-16 border-t py-8 text-sm text-muted-foreground">
