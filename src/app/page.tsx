@@ -10,9 +10,6 @@ import {
 import Image from "next/image";
 import { Award, BookOpen, ClipboardCheck, FileText, Presentation, Target } from "lucide-react";
 
-import heroImage from "./img/Abou-bah-Consulting.webp";
-import logoImage from "./img/Abou consulting transparent.webp";
-
 export default function Home() {
   return (
     <main className="flex-1">
@@ -68,7 +65,7 @@ export default function Home() {
             <div className="relative overflow-hidden rounded-[24px] border bg-card">
               <div className="absolute inset-0 bg-gradient-to-tr from-background/70 via-transparent to-background/30" />
               <Image
-                src={heroImage}
+                src="/img/Abou-bah-Consulting.webp"
                 alt="Abou BAH Consulting"
                 width={1400}
                 height={900}
@@ -79,7 +76,7 @@ export default function Home() {
                 <div className="flex items-center gap-3">
                   <div className="relative h-10 w-10 overflow-hidden rounded-md border bg-background/60">
                     <Image
-                      src={logoImage}
+                      src="/img/Abou%20consulting%20transparent.webp"
                       alt="Logo Abou BAH Consulting"
                       fill
                       sizes="40px"

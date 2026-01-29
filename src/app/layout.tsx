@@ -6,8 +6,6 @@ import InteractiveBackground from "@/components/InteractiveBackground";
 import FloatingActions from "@/components/FloatingActions";
 import { Button } from "@/components/ui/button";
 
-import logoImage from "./img/Abou consulting transparent.webp";
-
 export default function RootLayout({
   children,
 }: {
@@ -23,7 +21,7 @@ export default function RootLayout({
               <Link href="#" className="flex items-center gap-3">
                 <div className="relative h-9 w-9 overflow-hidden rounded-md border bg-background">
                   <Image
-                    src={logoImage}
+                    src="/img/Abou%20consulting%20transparent.webp"
                     alt="Abou BAH Consulting"
                     fill
                     sizes="36px"
