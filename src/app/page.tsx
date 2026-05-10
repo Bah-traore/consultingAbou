@@ -1,6 +1,8 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import Slideshow from "@/components/Slideshow";
+import PartnersCarousel from "@/components/PartnersCarousel";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -41,6 +43,7 @@ export default function Home() {
 
   return (
     <main className="flex-1">
+      <Slideshow />
       <header className="relative isolate overflow-hidden py-12 sm:py-16">
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-foreground/10 blur-3xl" />
@@ -401,6 +404,10 @@ export default function Home() {
           </CardContent>
         </Card>
       </section>
+      <footer className="w-full flex flex-col items-center bg-background pt-8 pb-4 mt-16 border-t">
+        <h3 className="text-lg font-semibold mb-4">Nos partenaires</h3>
+        <PartnersCarousel />
+      </footer>
     </main>
   );
 }
