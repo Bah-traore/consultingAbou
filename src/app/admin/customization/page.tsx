@@ -141,7 +141,8 @@ export default function AdminCustomization() {
       
       if (!response.ok) throw new Error('Erreur lors du chargement');
       
-      const data = await response.json();
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : null;
       if (data) {
         const imageFields = ['testimonials_image', 'services_image', 'about_image', 'hero_image_badge_icon', 'hero_image', 'hero_background_image'];
         imageFields.forEach(field => {
