@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Presentation, Target, Award } from "lucide-react";
-import { API_ENDPOINTS, Service } from "@/lib/api";
+import { API_ENDPOINTS, Service, apiGet, fixImageUrl } from "@/lib/api";
 import { useCustomization } from "@/hooks/use-customization";
 
 // Mapping des icônes
@@ -24,12 +24,14 @@ export default function ServicesSection() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch(API_ENDPOINTS.SERVICES.LIST);
-        if (!response.ok) throw new Error("Erreur lors du chargement");
-        const data = await response.json();
-        // Limiter le nombre de services selon la configuration
+        const data = await apiGet<any>(API_ENDPOINTS.SERVICES.LIST);
         const limit = customization?.items_per_page || 20;
-        setServices((data.results || []).slice(0, limit));
+        const rawServices = Array.isArray(data) ? data : data.results || [];
+        const fixedServices = rawServices.map((service: Service) => ({
+          ...service,
+          image: service.image ? fixImageUrl(service.image) : null
+        }));
+        setServices(fixedServices.slice(0, limit));
       } catch (err) {
         setError("Impossible de charger les services");
         console.error(err);
@@ -91,6 +93,7 @@ export default function ServicesSection() {
                     src={service.image}
                     alt={service.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    onError={(e) => { (e.currentTarget.parentElement as HTMLDivElement).style.display = 'none'; }}
                   />
                 </div>
               )}

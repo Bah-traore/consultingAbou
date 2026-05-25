@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User } from "lucide-react";
-import { API_ENDPOINTS, Article, apiGet } from "@/lib/api";
+import { API_ENDPOINTS, Article, apiGet, fixImageUrl } from "@/lib/api";
 import { useCustomization } from "@/hooks/use-customization";
 
 export default function DynamicBlogSection() {
@@ -19,7 +19,12 @@ export default function DynamicBlogSection() {
         const data = await apiGet<any>(API_ENDPOINTS.ARTICLES.LIST);
         // Limiter le nombre d'articles selon la configuration
         const limit = customization?.items_per_page || 6;
-        setArticles(Array.isArray(data) ? data.slice(0, limit) : (data.results || []).slice(0, limit));
+        const rawArticles = Array.isArray(data) ? data : data.results || [];
+        const fixedArticles = rawArticles.map((article: Article) => ({
+          ...article,
+          featured_image: article.featured_image ? fixImageUrl(article.featured_image) : null
+        })).slice(0, limit);
+        setArticles(fixedArticles);
       } catch (err) {
         console.error(err);
       } finally {
@@ -66,6 +71,7 @@ export default function DynamicBlogSection() {
                       src={article.featured_image}
                       alt={article.title}
                       className="w-full h-full object-cover"
+                    onError={(e) => { (e.currentTarget.parentElement as HTMLDivElement).style.display = 'none'; }}
                     />
                   </div>
                 )}
@@ -161,6 +167,7 @@ export default function DynamicBlogSection() {
                     src={article.featured_image}
                     alt={article.title}
                     className="w-full h-full object-cover"
+                    onError={(e) => { (e.currentTarget.parentElement as HTMLDivElement).style.display = 'none'; }}
                   />
                 </div>
               )}

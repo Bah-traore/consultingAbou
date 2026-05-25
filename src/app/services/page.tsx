@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Presentation, Target, Award, ArrowRight } from "lucide-react";
-import { API_ENDPOINTS, Service, apiGet } from "@/lib/api";
+import { API_ENDPOINTS, Service, apiGet, fixImageUrl } from "@/lib/api";
 import { useCustomization } from "@/hooks/use-customization";
 import Link from "next/link";
 
@@ -33,7 +33,12 @@ export default function ServicesPage() {
     const fetchServices = async () => {
       try {
         const data = await apiGet<any>(API_ENDPOINTS.SERVICES.LIST);
-        setServices(Array.isArray(data) ? data : data.results || []);
+        const rawServices = Array.isArray(data) ? data : data.results || [];
+        const fixedServices = rawServices.map((service: Service) => ({
+          ...service,
+          image: service.image ? fixImageUrl(service.image) : null
+        }));
+        setServices(fixedServices);
       } catch (err) {
         setError("Impossible de charger les services");
         console.error(err);
@@ -52,15 +57,16 @@ export default function ServicesPage() {
 
   // Grouper par catégorie
   const servicesByCategory: ServicesByCategory = filteredServices.reduce((acc, service) => {
-    if (!acc[service.category]) {
-      acc[service.category] = [];
+    const category = service.category || 'other';
+    if (!acc[category]) {
+      acc[category] = [];
     }
-    acc[service.category].push(service);
+    acc[category].push(service);
     return acc;
   }, {} as ServicesByCategory);
 
-  // Catégories disponibles
-  const categories = Array.from(new Set(services.map(s => s.category)));
+  // Catégories disponibles (exclure undefined)
+  const categories = Array.from(new Set(services.map(s => s.category).filter((c): c is string => !!c)));
 
   if (loading) {
     return (
@@ -126,7 +132,7 @@ export default function ServicesPage() {
               <Button
                 key={category}
                 variant={filter === category ? "default" : "outline"}
-                onClick={() => setFilter(category)}
+                onClick={() => setFilter(category || 'all')}
                 size="lg"
                 className="capitalize"
               >
@@ -181,6 +187,7 @@ export default function ServicesPage() {
                               src={service.image}
                               alt={service.title}
                               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              onError={(e) => { (e.currentTarget.parentElement as HTMLDivElement).style.display = 'none'; }}
                             />
                           </div>
                         )}

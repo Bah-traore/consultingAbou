@@ -20,6 +20,8 @@ import {
   CheckCircle,
   XCircle
 } from "lucide-react";
+import { fixImageUrl } from "@/lib/api";
+
 
 interface SiteCustomization {
   id: number;
@@ -140,6 +142,14 @@ export default function AdminCustomization() {
       if (!response.ok) throw new Error('Erreur lors du chargement');
       
       const data = await response.json();
+      if (data) {
+        const imageFields = ['testimonials_image', 'services_image', 'about_image', 'hero_image_badge_icon', 'hero_image', 'hero_background_image'];
+        imageFields.forEach(field => {
+          if (data[field]) {
+            data[field] = fixImageUrl(data[field]);
+          }
+        });
+      }
       setCustomization(data);
     } catch (error) {
       console.error('Erreur:', error);
@@ -207,6 +217,14 @@ export default function AdminCustomization() {
       if (!response.ok) throw new Error('Erreur lors de la sauvegarde');
 
       const data = await response.json();
+      if (data) {
+        const imageFields = ['testimonials_image', 'services_image', 'about_image', 'hero_image_badge_icon', 'hero_image', 'hero_background_image'];
+        imageFields.forEach(field => {
+          if (data[field]) {
+            data[field] = fixImageUrl(data[field]);
+          }
+        });
+      }
       setCustomization(data);
       setSuccess('Configuration sauvegardée avec succès !');
       

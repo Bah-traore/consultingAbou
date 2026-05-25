@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { articlesAPI, Article } from "@/lib/api";
+import { articlesAPI, Article, fixImageUrl } from "@/lib/api";
 import { Calendar, User } from "lucide-react";
 
 export default function BlogPage() {
@@ -15,7 +15,12 @@ export default function BlogPage() {
   useEffect(() => {
     articlesAPI.getAll()
       .then(data => {
-        setArticles(data.results || []);
+        const rawArticles = data.results || [];
+        const fixedArticles = rawArticles.map((article: Article) => ({
+          ...article,
+          featured_image: article.featured_image ? fixImageUrl(article.featured_image) : null
+        }));
+        setArticles(fixedArticles);
         setLoading(false);
       })
       .catch(err => {
@@ -82,6 +87,7 @@ export default function BlogPage() {
                         src={article.featured_image}
                         alt={article.title}
                         className="w-full h-full object-cover"
+                        onError={(e) => { (e.currentTarget.parentElement as HTMLDivElement).style.display = 'none'; }}
                       />
                     </div>
                   )}

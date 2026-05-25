@@ -271,10 +271,11 @@ class SiteCustomizationAdminViewSet(viewsets.ModelViewSet):
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
-    def update(self, request, pk=None):
+    def update(self, request, *args, **kwargs):
         """Mettre à jour la configuration active"""
+        partial = kwargs.pop('partial', False)
         customization = self.get_object()
-        serializer = self.get_serializer(customization, data=request.data, partial=True)
+        serializer = self.get_serializer(customization, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
@@ -287,8 +288,9 @@ class SlideAdminViewSet(viewsets.ModelViewSet):
     serializer_class = SlideSerializer
     permission_classes = [permissions.IsAdminUser]
     
-    def update(self, request, pk=None):
+    def update(self, request, *args, **kwargs):
         """Mettre à jour un slide en gérant correctement l'image"""
+        partial = kwargs.pop('partial', False)
         slide = self.get_object()
         
         # Vérifier si keep_image est demandé
@@ -303,9 +305,9 @@ class SlideAdminViewSet(viewsets.ModelViewSet):
             if 'image' in data:
                 del data['image']
             # Utiliser les données modifiées
-            serializer = self.get_serializer(slide, data=data, partial=True)
+            serializer = self.get_serializer(slide, data=data, partial=partial)
         else:
-            serializer = self.get_serializer(slide, data=request.data, partial=True)
+            serializer = self.get_serializer(slide, data=request.data, partial=partial)
         
         serializer.is_valid(raise_exception=True)
         serializer.save()

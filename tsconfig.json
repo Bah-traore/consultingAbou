@@ -7,26 +7,26 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
     "noEmit": true,
     "incremental": true,
     "module": "esnext",
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "downlevelIteration": true,
     "jsx": "preserve",
     "plugins": [
       {
         "name": "next"
       }
-    ]
+    ],
+    "types": ["node"]
   },
   "include": [
     "next-env.d.ts",

@@ -8,7 +8,7 @@ import "swiper/css";
 import "swiper/css/effect-fade";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
-import { API_ENDPOINTS, apiGet } from "@/lib/api";
+import { API_ENDPOINTS, apiGet, fixImageUrl } from "@/lib/api";
 
 interface Slide {
   id: number;
@@ -60,7 +60,11 @@ export default function DynamicSlideshow() {
       try {
         const data = await apiGet<any>(API_ENDPOINTS.SLIDES.LIST);
         const slideArray = Array.isArray(data) ? data : data.results || [];
-        setSlides(slideArray);
+        const fixedSlides = slideArray.map((slide: Slide) => ({
+          ...slide,
+          image: slide.image ? fixImageUrl(slide.image) : null
+        }));
+        setSlides(fixedSlides);
       } catch (err) {
         console.error("Erreur lors du chargement des slides:", err);
       } finally {
@@ -196,6 +200,13 @@ function SlideContent({ slide, globalColors }: { slide: Slide; globalColors: any
             backgroundSize: objectFitMap[imageFit] || 'contain',
             backgroundRepeat: 'no-repeat',
           }}
+          onError={(e) => {
+            const target = e.currentTarget;
+            if (target && target.style) {
+              target.style.backgroundImage = `url('/fallback-slide.jpg')`;
+              target.title = 'Image non disponible';
+            }
+          }}
         />
       ) : (
         <div 
@@ -203,7 +214,6 @@ function SlideContent({ slide, globalColors }: { slide: Slide; globalColors: any
           style={{ backgroundColor: bgColor }} 
         />
       )}
-      
       {/* Overlay sombre */}
       <div 
         className="absolute inset-0 z-10" 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { articlesAPI, Article } from "@/lib/api";
+import { articlesAPI, Article, fixImageUrl } from "@/lib/api";
 import { Calendar, User, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -19,6 +19,9 @@ export default function ArticleDetailPage() {
     if (slug) {
       articlesAPI.getBySlug(slug)
         .then(data => {
+          if (data) {
+            data.featured_image = data.featured_image ? fixImageUrl(data.featured_image) : null;
+          }
           setArticle(data);
           setLoading(false);
         })
@@ -78,6 +81,7 @@ export default function ArticleDetailPage() {
               src={article.featured_image}
               alt={article.title}
               className="w-full h-full object-cover"
+              onError={(e) => { (e.currentTarget.parentElement as HTMLDivElement).style.display = 'none'; }}
             />
           </div>
         )}

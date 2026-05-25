@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Star } from "lucide-react";
-import { API_ENDPOINTS, Temoignage, apiGet } from "@/lib/api";
+import { API_ENDPOINTS, Temoignage, apiGet, fixImageUrl } from "@/lib/api";
 import { useCustomization } from "@/hooks/use-customization";
 import Image from "next/image";
 
@@ -16,7 +16,12 @@ export default function DynamicTestimonialsSection() {
     const fetchTestimonials = async () => {
       try {
         const data = await apiGet<any>(API_ENDPOINTS.TEMOIGNAGES.LIST);
-         setTestimonials(Array.isArray(data) ? data : data.results || []);
+        const rawTestimonials = Array.isArray(data) ? data : data.results || [];
+        const fixedTestimonials = rawTestimonials.map((testimonial: Temoignage) => ({
+          ...testimonial,
+          photo: testimonial.photo ? fixImageUrl(testimonial.photo) : null
+        }));
+        setTestimonials(fixedTestimonials);
       } catch (err) {
         console.error(err);
       } finally {
@@ -108,6 +113,7 @@ export default function DynamicTestimonialsSection() {
                       alt={`${testimonial.first_name} ${testimonial.last_name}`}
                       fill
                       className="object-cover"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                     />
                   </div>
                 ) : (
@@ -115,12 +121,12 @@ export default function DynamicTestimonialsSection() {
                     className="h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold text-lg"
                     style={{ backgroundColor: customization.primary_color }}
                   >
-                    {testimonial.first_name[0]}{testimonial.last_name[0]}
+                    {(testimonial.first_name || '')[0] || ''}{(testimonial.last_name || '')[0] || ''}
                   </div>
                 )}
                 <div>
                   <p className="font-medium" style={{ color: customization.text_color }}>
-                    {testimonial.first_name} {testimonial.last_name}
+                    {testimonial.first_name || ''} {testimonial.last_name || ''}
                   </p>
                   <div className="flex gap-0.5 mt-1">
                     {[...Array(5)].map((_, i) => (

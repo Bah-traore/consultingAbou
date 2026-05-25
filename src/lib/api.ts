@@ -12,6 +12,7 @@ const getApiUrl = (endpoint: string): string => {
 
 interface FetchOptions extends RequestInit {
   requireAuth?: boolean;
+  headers?: Record<string, string>;
 }
 
 interface TokenResponse {
@@ -20,15 +21,29 @@ interface TokenResponse {
 }
 
 /**
+ * Helper pour convertir HeadersInit en objet standard
+ */
+const headersToObject = (headers: HeadersInit): Record<string, string> => {
+  if (headers instanceof Headers) {
+    const obj: Record<string, string> = {};
+    const entries = Array.from(headers.entries());
+    for (const [key, value] of entries) {
+      obj[key] = value;
+    }
+    return obj;
+  }
+  if (typeof headers === 'object' && headers !== null) {
+    return headers as Record<string, string>;
+  }
+  return {};
+};
+/**
  * Fonction fetch wrapper qui ajoute automatiquement le token d'authentification
  */
 export async function apiFetch(endpoint: string, options: FetchOptions = {}): Promise<Response> {
   const { requireAuth = true, ...fetchOptions } = options;
   
-  const headers: HeadersInit = {
-    ...(fetchOptions.headers as HeadersInit),
-  };
-
+  const headers: Record<string, string> = headersToObject(fetchOptions.headers || {});
   // Ajouter le token d'authentification si requis
   if (requireAuth) {
     const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
@@ -385,7 +400,7 @@ export const servicesAPI = {
 export const articlesAPI = {
   getAll: () => apiGet<any>(API_ENDPOINTS.ARTICLES.LIST),
   getById: (id: number) => apiGet<any>(API_ENDPOINTS.ARTICLES.DETAIL(id)),
-  getBySlug: (slug: string) => apiGet<any>(`/api/blog/articles/${slug}/`),
+  getBySlug: (slug: string) => apiGet<any>(API_ENDPOINTS.ARTICLES.GET_BY_SLUG(slug)),
   create: (data: any) => apiPost(API_ENDPOINTS.ARTICLES.LIST, data),
   update: (id: number, data: any) => apiPut(API_ENDPOINTS.ARTICLES.DETAIL(id), data),
   delete: (id: number) => apiDelete(API_ENDPOINTS.ARTICLES.DETAIL(id)),
@@ -411,7 +426,7 @@ export const contactsAPI = {
   getAll: () => apiGet<any>(API_ENDPOINTS.CONTACTS.LIST),
   getById: (id: number) => apiGet<any>(API_ENDPOINTS.CONTACTS.DETAIL(id)),
   markRead: (id: number) => apiPost(API_ENDPOINTS.CONTACTS.MARK_READ(id)),
-  create: (data: any) => apiPost(API_ENDPOINTS.CONTACTS.LIST, data),
+  create: (data: any) => apiPost('/api/contacts/', data, { requireAuth: false }),
 };
 
 export const rendezvousAPI = {
@@ -419,5 +434,67 @@ export const rendezvousAPI = {
   getById: (id: number) => apiGet<any>(API_ENDPOINTS.RENDEZVOUS.DETAIL(id)),
   confirm: (id: number) => apiPost(API_ENDPOINTS.RENDEZVOUS.CONFIRM(id)),
   cancel: (id: number) => apiPost(API_ENDPOINTS.RENDEZVOUS.CANCEL(id)),
-  create: (data: any) => apiPost(API_ENDPOINTS.RENDEZVOUS.LIST, data),
+  create: (data: any) => apiPost('/api/rendezvous/', data, { requireAuth: false }),
 };
+
+/**
+ * Formate et corrige l'URL d'une image pour gérer les chemins locaux du backend
+ * et les configurations Cloudflare R2 (avec domaine personnalisé).
+ */
+export function fixImageUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  
+  const customDomain = process.env.NEXT_PUBLIC_R2_CUSTOM_DOMAIN;
+  
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    if (customDomain) {
+      // Nettoyer le domaine personnalisé au cas où il a déjà un protocole
+      const cleanCustomDomain = customDomain.replace(/^https?:\/\//, '');
+      const endpoint = 'd22c44f0b0ce9fe699f0dbc8dcfd5e3d.r2.cloudflarestorage.com';
+      const bucketName = 'consultingaboubah';
+      
+      // Si l'URL contient l'endpoint brut R2
+      if (url.includes('r2.cloudflarestorage.com')) {
+        const rawBucketUrl = `https://${endpoint}/${bucketName}`;
+        if (url.startsWith(rawBucketUrl)) {
+          return url.replace(rawBucketUrl, `https://${cleanCustomDomain}`);
+        }
+        
+        const rawBucketUrlHttp = `http://${endpoint}/${bucketName}`;
+        if (url.startsWith(rawBucketUrlHttp)) {
+          return url.replace(rawBucketUrlHttp, `https://${cleanCustomDomain}`);
+        }
+        
+        // Remplacement générique de l'endpoint et suppression du bucket name s'il est présent
+        let fixed = url;
+        fixed = fixed.replace(new RegExp(`https?://${endpoint}/${bucketName}/?`, 'g'), `https://${cleanCustomDomain}/`);
+        fixed = fixed.replace(new RegExp(`https?://${endpoint}/?`, 'g'), `https://${cleanCustomDomain}/`);
+        return fixed;
+      }
+      
+      // Si l'URL commence par le domaine personnalisé sans protocole (ex: uploads.autogare.com/...)
+      if (url.startsWith(cleanCustomDomain)) {
+        return `https://${url}`;
+      }
+    }
+    return url;
+  }
+  
+  // Si c'est un chemin relatif (ex: /media/...), on ajoute l'API URL locale
+  if (url.startsWith('/')) {
+    const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace('0.0.0.0', 'localhost');
+    const cleanApiUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+    return `${cleanApiUrl}${url}`;
+  }
+  
+  // Si l'URL n'a pas de protocole mais commence par le custom domain (ex: uploads.autogare.com/...)
+  if (customDomain) {
+    const cleanCustomDomain = customDomain.replace(/^https?:\/\//, '');
+    if (url.startsWith(cleanCustomDomain)) {
+      return `https://${url}`;
+    }
+  }
+  
+  return url;
+}
+

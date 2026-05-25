@@ -31,7 +31,7 @@ async function testSlidesFix() {
         console.log(`✅ Image trouvée: ${slideWithImage.image}`);
         
         // Vérifier si l'URL utilise le domaine personnalisé
-        if (slideWithImage.image.includes('uploads.autogare.com')) {
+        if (slideWithImage.image.includes('consultingmedia.autogare.com')) {
           console.log('✅ URL de l\'image utilise le domaine personnalisé R2');
         } else {
           console.log('⚠ URL de l\'image n\'utilise pas le domaine personnalisé R2');

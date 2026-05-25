@@ -15,9 +15,10 @@ class SlideSerializer(serializers.ModelSerializer):
             return {}
     
     def update(self, instance, validated_data):
-        # Si aucune nouvelle image n'est fournie, garder l'image existante
-        if 'image' not in validated_data:
-            validated_data['image'] = instance.image
+        # Si aucune nouvelle image n'est fournie, ne pas inclure l'image dans validated_data
+        # pour éviter la vérification d'existence qui cause des erreurs 403 avec R2
+        if 'image' not in validated_data or validated_data['image'] is None:
+            validated_data.pop('image', None)
         return super().update(instance, validated_data)
     
     class Meta:

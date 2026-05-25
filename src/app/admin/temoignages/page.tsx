@@ -17,6 +17,8 @@ import {
   MessageSquare
 } from "lucide-react";
 import Image from "next/image";
+import { fixImageUrl } from "@/lib/api";
+
 
 interface Temoignage {
   id: number;
@@ -62,7 +64,13 @@ export default function AdminTemoignages() {
       if (!response.ok) throw new Error('Erreur lors du chargement');
       
       const data = await response.json();
-      setTemoignages(data.results || data);
+      const rawTemoignages = data.results || data;
+      const fixedTemoignages = Array.isArray(rawTemoignages) ?
+        rawTemoignages.map((t: Temoignage) => ({
+          ...t,
+          photo: t.photo ? fixImageUrl(t.photo) : null
+        })) : [];
+      setTemoignages(fixedTemoignages);
     } catch (error) {
       console.error('Erreur:', error);
       setError('Impossible de charger les témoignages');
@@ -283,6 +291,7 @@ export default function AdminTemoignages() {
                                 alt={`${temoignage.first_name} ${temoignage.last_name}`}
                                 fill
                                 className="object-cover"
+                                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                               />
                             </div>
                           ) : (

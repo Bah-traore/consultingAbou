@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { AdminSidebar } from '@/components/AdminSidebar';
+import { fixImageUrl } from "@/lib/api";
+
 
 interface Partenaire {
   id: number;
@@ -82,7 +84,13 @@ export default function AdminPartenaires() {
       if (!response.ok) throw new Error('Erreur lors du chargement');
 
       const data = await response.json();
-      setPartenaires(data.results || data);
+      const rawPartenaires = data.results || data;
+      const fixedPartenaires = Array.isArray(rawPartenaires) ?
+        rawPartenaires.map((partenaire: Partenaire) => ({
+          ...partenaire,
+          logo: partenaire.logo ? fixImageUrl(partenaire.logo) : null
+        })) : [];
+      setPartenaires(fixedPartenaires);
     } catch (error) {
       console.error('Erreur:', error);
       setError('Impossible de charger les partenaires');
@@ -319,6 +327,7 @@ export default function AdminPartenaires() {
                             width={50}
                             height={50}
                             className="rounded object-contain"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                           />
                         ) : (
                           <div className="w-[50px] h-[50px] bg-gray-100 rounded flex items-center justify-center">
@@ -403,7 +412,9 @@ export default function AdminPartenaires() {
 
       {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[95vw] lg:max-w-5xl max-h-[90vh] overflow-hidden p-0">
+          <div className="flex flex-col lg:flex-row max-h-[90vh]">
+          <div className="flex-1 overflow-y-auto p-6 lg:max-w-[60%]">
           <DialogHeader>
             <DialogTitle>
               {editingPartenaire ? "Modifier le partenaire" : "Créer un nouveau partenaire"}
@@ -458,6 +469,7 @@ export default function AdminPartenaires() {
                     width={80}
                     height={80}
                     className="rounded object-contain border"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                   />
                 )}
                 <div className="flex items-center gap-2">
@@ -503,6 +515,68 @@ export default function AdminPartenaires() {
               </Button>
             </DialogFooter>
           </form>
+          </div>
+
+          {/* Right Panel - Partner Preview */}
+          <div className="hidden lg:flex lg:w-[40%] bg-slate-900/60 border-l border-slate-700 overflow-y-auto p-6 flex-col justify-center items-center gap-3">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold self-start">
+              Aperçu partenaire
+            </Label>
+            <p className="text-[11px] text-muted-foreground self-start mb-2">
+              Rendu fidèle à la section partenaires
+            </p>
+            {/* Carte logo — comme dans la section partenaires du site */}
+            <div className="w-full max-w-[240px] rounded-2xl border border-slate-700 bg-slate-800/70 shadow-lg overflow-hidden">
+              {/* Zone logo */}
+              <div className="flex items-center justify-center bg-white/5 border-b border-slate-700/60 py-6 px-4">
+                {formData.logoPreview ? (
+                  <img
+                    src={formData.logoPreview}
+                    alt="Logo"
+                    className="max-h-16 max-w-[160px] object-contain drop-shadow-sm"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-slate-500">
+                    <Globe className="w-10 h-10" />
+                    <span className="text-[10px]">Logo non défini</span>
+                  </div>
+                )}
+              </div>
+              {/* Infos */}
+              <div className="p-4 space-y-2">
+                <h3 className="text-sm font-bold text-white leading-tight line-clamp-1">
+                  {formData.name || 'Nom du partenaire'}
+                </h3>
+                <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                  {formData.description || 'Description courte du partenaire...'}
+                </p>
+                {formData.website && (
+                  <p className="text-[10px] text-blue-400 truncate flex items-center gap-1">
+                    <Globe className="w-3 h-3 shrink-0" />
+                    {formData.website.replace(/^https?:\/\//, '')}
+                  </p>
+                )}
+              </div>
+              {/* Statut */}
+              <div className="px-4 pb-3">
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full ${
+                    formData.is_active
+                      ? 'bg-green-500/20 text-green-400'
+                      : 'bg-red-500/20 text-red-400'
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${formData.is_active ? 'bg-green-400' : 'bg-red-400'}`} />
+                  {formData.is_active ? 'Actif' : 'Inactif'}
+                </span>
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground text-center">
+              ★ Sur le site : grille de logos avec effets hover
+            </p>
+          </div>
+
+          </div>
         </DialogContent>
       </Dialog>
     </>

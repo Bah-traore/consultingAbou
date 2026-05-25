@@ -23,6 +23,8 @@ import {
   MoveDown
 } from "lucide-react";
 import Image from "next/image";
+import { fixImageUrl } from "@/lib/api";
+
 
 interface Slide {
   id: number;
@@ -194,16 +196,6 @@ export default function AdminSlides() {
     }
   };
 
-  const fixImageUrl = (url: string): string => {
-    // Vérifier si l'URL est une URL R2 et si le domaine personnalisé est configuré
-    if (process.env.NEXT_PUBLIC_R2_CUSTOM_DOMAIN && url.includes('r2.cloudflarestorage.com')) {
-      return url.replace(
-        'https://d22c44f0b0ce9fe699f0dbc8dcfd5e3d.r2.cloudflarestorage.com',
-        process.env.NEXT_PUBLIC_R2_CUSTOM_DOMAIN
-      );
-    }
-    return url;
-  };
 
   const handleCreate = () => {
     setEditingSlide(null);
@@ -514,6 +506,7 @@ export default function AdminSlides() {
                       alt={slide.title}
                       fill
                       className="object-cover"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                     />
                   ) : (
                     <div 
@@ -635,7 +628,9 @@ export default function AdminSlides() {
 
       {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl px-4 sm:px-6 max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] lg:max-w-6xl max-h-[90vh] overflow-hidden p-0">
+          <div className="flex flex-col lg:flex-row max-h-[90vh]">
+          <div className="flex-1 overflow-y-auto p-6 lg:max-w-[60%]">
           <DialogHeader>
             <DialogTitle>
               {editingSlide ? "Modifier le slide" : "Créer un nouveau slide"}
@@ -668,17 +663,18 @@ export default function AdminSlides() {
             <div className="space-y-2">
               <Label htmlFor="image">Image</Label>
               <div className="border-2 border-dashed rounded-lg p-6 text-center">
-                {editingSlide?.image && !formData.image && (
+                {(formData.image || (editingSlide?.image && !formData.image)) && (
                   <div className="mb-4">
-                    <div className="relative h-32 w-full mx-auto rounded-md overflow-hidden">
-                      <Image
-                        src={editingSlide.image}
-                        alt="Image actuelle"
-                        fill
-                        className="object-cover"
+                    <div className="relative h-32 w-full mx-auto rounded-md overflow-hidden bg-gray-50 border">
+                      <img
+                        src={formData.image ? URL.createObjectURL(formData.image) : (editingSlide?.image || '')}
+                        alt="Aperçu"
+                        className="object-contain w-full h-full"
                       />
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">Image actuelle</p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {formData.image ? `Nouvelle image : ${formData.image.name}` : "Image actuelle"}
+                    </p>
                   </div>
                 )}
                 
@@ -1063,6 +1059,103 @@ export default function AdminSlides() {
               </Button>
             </DialogFooter>
           </form>
+          </div>
+
+          {/* Right Panel - Live Preview */}
+          <div className="hidden lg:flex lg:w-[40%] bg-slate-900/60 border-l border-slate-700 overflow-y-auto p-6 flex-col gap-3">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+              Aperçu slide
+            </Label>
+            <p className="text-[11px] text-muted-foreground mb-2">
+              Rendu fidèle à la page d'accueil (proportions réduites)
+            </p>
+            <div
+              className="relative w-full rounded-xl overflow-hidden border shadow-lg flex flex-col"
+              style={{
+                aspectRatio: '16/7',
+                backgroundColor: formData.slide_background_color || '#1E3A8A'
+              }}
+            >
+              {/* Background Image */}
+              {(formData.image || (editingSlide && editingSlide.image)) && (
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage: `url(${formData.image ? URL.createObjectURL(formData.image) : (editingSlide?.image || '')})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                  }}
+                />
+              )}
+              {/* Overlay */}
+              <div
+                className="absolute inset-0 z-10"
+                style={{ backgroundColor: formData.slide_overlay_color || 'rgba(0,0,0,0.55)' }}
+              />
+              {/* Contenu aligné */}
+              <div
+                className="absolute inset-0 z-20 flex p-3"
+                style={{
+                  justifyContent: formData.title_position?.includes('left') ? 'flex-start' : formData.title_position?.includes('right') ? 'flex-end' : 'center',
+                  alignItems: formData.title_position?.includes('top') ? 'flex-start' : formData.title_position?.includes('bottom') ? 'flex-end' : 'center',
+                  textAlign: formData.title_position?.includes('left') ? 'left' : formData.title_position?.includes('right') ? 'right' : 'center',
+                }}
+              >
+                <div
+                  className="backdrop-blur-sm w-[75%] overflow-hidden"
+                  style={{
+                    backgroundColor: formData.slide_content_background_color || 'rgba(0,0,0,0.4)',
+                    borderRadius: `${Math.min(formData.slide_content_border_radius || 16, 20)}px`,
+                    padding: `${Math.min(formData.slide_content_padding || 24, 16)}px`,
+                    ...(formData.slide_show_border ? { border: `2px solid ${formData.slide_content_border_color || '#3B82F6'}` } : {}),
+                  }}
+                >
+                  {/* Badge */}
+                  {formData.slide_badge_text && (
+                    <span
+                      className="inline-block px-2 py-0.5 rounded-full text-[9px] font-semibold mb-1"
+                      style={{ backgroundColor: formData.slide_badge_color || '#3B82F6', color: '#fff' }}
+                    >
+                      {formData.slide_badge_text}
+                    </span>
+                  )}
+                  {/* Titre */}
+                  <h3
+                    className="text-xs font-bold leading-tight line-clamp-2 mb-0.5"
+                    style={{ color: formData.slide_title_color || '#FFFFFF' }}
+                  >
+                    {formData.title || 'Titre du slide'}
+                  </h3>
+                  {/* Sous-titre */}
+                  <p
+                    className="text-[9px] leading-snug line-clamp-2 opacity-90"
+                    style={{ color: formData.slide_subtitle_color || '#E5E7EB' }}
+                  >
+                    {formData.subtitle || 'Sous-titre du slide...'}
+                  </p>
+                  {/* Bouton */}
+                  {formData.slide_button_text && (
+                    <span
+                      className="inline-block mt-1.5 px-3 py-1 rounded text-[9px] font-bold"
+                      style={{
+                        backgroundColor: formData.slide_button_color || '#1E40AF',
+                        color: formData.slide_button_text_color || '#fff'
+                      }}
+                    >
+                      {formData.slide_button_text}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            {/* Indicateur de taille réelle */}
+            <p className="text-[10px] text-muted-foreground text-center">
+              ★ Sur le site : plein écran avec image de fond
+            </p>
+          </div>
+
+          </div>
         </DialogContent>
       </Dialog>
     </div>

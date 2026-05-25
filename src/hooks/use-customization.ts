@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
-import { API_ENDPOINTS, apiGet } from '@/lib/api';
+import { API_ENDPOINTS, apiGet, fixImageUrl } from '@/lib/api';
 
 interface CustomizationStore {
   customization: any | null;
@@ -20,6 +20,24 @@ export const useCustomization = create<CustomizationStore>((set) => ({
       try {
         const data = await apiGet<any>(API_ENDPOINTS.CUSTOMIZATION.GET);
         console.log('Données de personnalisation reçues:', data);
+        
+        // Corriger les URLs des images de la personnalisation
+        if (data) {
+          const imageFields = [
+            'hero_background_image',
+            'hero_image',
+            'about_image',
+            'hero_image_badge_icon',
+            'testimonials_image',
+            'logo'
+          ];
+          for (const field of imageFields) {
+            if (data[field]) {
+              data[field] = fixImageUrl(data[field]);
+            }
+          }
+        }
+        
         set({ customization: data, isLoading: false });
       } catch (err) {
         console.error('Erreur lors du chargement de la personnalisation:', err);

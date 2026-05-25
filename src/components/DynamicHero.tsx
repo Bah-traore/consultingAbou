@@ -46,6 +46,7 @@ export default function DynamicHero() {
             fill
             className="object-cover opacity-20"
             priority
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
         </div>
       )}
@@ -151,6 +152,7 @@ export default function DynamicHero() {
                 height={900}
                 priority
                 className="h-[360px] w-full object-cover sm:h-[440px]"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
               />
             ) : customization.about_image ? (
               <Image
@@ -160,6 +162,7 @@ export default function DynamicHero() {
                 height={900}
                 priority
                 className="h-[360px] w-full object-cover sm:h-[440px]"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
               />
             ) : (
               <Image
@@ -181,6 +184,7 @@ export default function DynamicHero() {
                       fill
                       sizes="40px"
                       className="object-contain p-1"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                     />
                   </div>
                 )}

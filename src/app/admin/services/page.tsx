@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminPageLayout } from "@/components/AdminPageLayout";
+import { fixImageUrl } from "@/lib/api";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,7 +24,11 @@ import {
   Search,
   CheckCircle,
   XCircle,
-  Loader2
+  Loader2,
+  BookOpen,
+  Presentation,
+  Target,
+  Award
 } from "lucide-react";
 
 interface Service {
@@ -55,7 +61,22 @@ export default function AdminServices() {
   const [error, setError] = useState<string | null>(null);
   
   // Form state
-  const [formData, setFormData] = useState({
+  interface FormDataState {
+    title: string;
+    description: string;
+    image: File | null;
+    category: string;
+    icon: string;
+    is_active: boolean;
+    order: number;
+    service_background_color: string;
+    service_title_color: string;
+    service_description_color: string;
+    service_category_color: string;
+    service_category_text_color: string;
+  }
+  
+  const [formData, setFormData] = useState<FormDataState>({
     title: "",
     description: "",
     image: null,
@@ -94,7 +115,13 @@ export default function AdminServices() {
       if (!response.ok) throw new Error('Erreur lors du chargement');
       
       const data = await response.json();
-      setServices(data.results || data);
+      const rawServices = data.results || data;
+      const fixedServices = Array.isArray(rawServices) ?
+        rawServices.map((service: Service) => ({
+          ...service,
+          image: service.image ? fixImageUrl(service.image) : null
+        })) : [];
+      setServices(fixedServices);
     } catch (error) {
       console.error('Erreur:', error);
       setError('Impossible de charger les services');
@@ -357,7 +384,9 @@ export default function AdminServices() {
 
       {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[95vw] lg:max-w-6xl max-h-[90vh] overflow-hidden p-0">
+          <div className="flex flex-col lg:flex-row max-h-[90vh]">
+          <div className="flex-1 overflow-y-auto p-6 lg:max-w-[60%]">
           <DialogHeader>
             <DialogTitle>
               {editingService ? "Modifier le service" : "Créer un nouveau service"}
@@ -421,6 +450,15 @@ export default function AdminServices() {
                 }
               }}
             />
+            {(formData.image || (editingService && editingService.image)) && (
+              <div className="mt-2 relative h-32 w-full rounded-md overflow-hidden bg-gray-50 border">
+                <img
+                  src={formData.image ? URL.createObjectURL(formData.image) : (editingService?.image || '')}
+                  alt="Aperçu"
+                  className="object-contain w-full h-full"
+                />
+              </div>
+            )}
           </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -552,6 +590,8 @@ export default function AdminServices() {
             </div>
           </div>
 
+
+
           <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
@@ -572,6 +612,70 @@ export default function AdminServices() {
               </Button>
             </DialogFooter>
           </form>
+          </div>
+
+          {/* Right Panel - Live Preview */}
+          <div className="hidden lg:flex lg:w-[40%] bg-slate-900/60 border-l border-slate-700 overflow-y-auto p-6 flex-col justify-center items-center gap-3">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold self-start">
+              Aperçu carte service
+            </Label>
+            <p className="text-[11px] text-muted-foreground self-start mb-2">
+              Rendu fidèle à la page /services
+            </p>
+            {/* Carte fidèle à ServicesSection.tsx */}
+            <div
+              className="w-full max-w-[280px] rounded-xl border border-border/70 overflow-hidden shadow-md transition-all duration-300"
+              style={{ backgroundColor: formData.service_background_color }}
+            >
+              {/* Image si disponible */}
+              {(formData.image || (editingService && editingService.image)) && (
+                <div className="aspect-video w-full overflow-hidden">
+                  <img
+                    src={formData.image ? URL.createObjectURL(formData.image) : (editingService?.image || '')}
+                    alt="Aperçu"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              {/* CardHeader : icône + titre + description */}
+              <div className="px-5 pt-5 pb-2">
+                <div
+                  className="flex items-start gap-3 font-semibold text-base mb-2"
+                  style={{ color: formData.service_title_color }}
+                >
+                  <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border bg-background/20">
+                    {(() => {
+                      const icons: Record<string, React.ElementType> = { BookOpen, Presentation, Target, Award };
+                      const Icon = icons[formData.icon] || BookOpen;
+                      return <Icon className="h-4 w-4" />;
+                    })()}
+                  </span>
+                  <span className="line-clamp-2 leading-snug">{formData.title || 'Titre du service'}</span>
+                </div>
+                <p
+                  className="text-sm leading-relaxed line-clamp-3"
+                  style={{ color: formData.service_description_color }}
+                >
+                  {formData.description || 'La description du service apparaît ici sur 3 lignes maximum avant d\'être tronquée.'}
+                </p>
+              </div>
+              {/* CardContent : badge catégorie */}
+              <div className="px-5 pb-5 pt-2">
+                <span
+                  className="inline-block px-3 py-1 text-xs font-semibold rounded-full capitalize border"
+                  style={{
+                    backgroundColor: formData.service_category_color,
+                    color: formData.service_category_text_color,
+                    borderColor: formData.service_category_color
+                  }}
+                >
+                  {formData.category || 'catégorie'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          </div>
         </DialogContent>
       </Dialog>
     </AdminPageLayout>

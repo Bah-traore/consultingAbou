@@ -9,6 +9,7 @@ import FloatingActions from "@/components/FloatingActions";
 import FloatingNavMenu from "@/components/FloatingNavMenu";
 import DynamicHeader from "@/components/DynamicHeader";
 import Footer from "@/components/Footer";
+import PageLoader from "@/components/PageLoader";
 import { useCustomization, useApplyCustomStyles } from "@/hooks/use-customization";
 
 export default function RootLayout({
@@ -19,7 +20,7 @@ export default function RootLayout({
   const pathname = usePathname();
   const isAdminPage = pathname?.startsWith('/admin');
   
-  const { fetchCustomization } = useCustomization();
+  const { customization, isLoading, error, fetchCustomization } = useCustomization();
   
   // Appliquer les styles personnalisés (seulement sur pages non-admin)
   if (!isAdminPage) {
@@ -43,29 +44,35 @@ export default function RootLayout({
             {children}
           </div>
         ) : (
-          // Layout public normal avec tous les composants
-          <InteractiveBackground>
-            <div className="mx-auto flex min-h-screen w-full flex-col px-4 sm:px-6 lg:px-10">
-              {/* Header dynamique - s'adapte selon la page */}
-              <DynamicHeader />
+          // Layout public avec PageLoader universel pendant le chargement
+          <>
+            {(!customization && isLoading) || (!customization && !error) ? (
+              <PageLoader />
+            ) : (
+              <InteractiveBackground>
+                <div className="mx-auto flex min-h-screen w-full flex-col px-4 sm:px-6 lg:px-10">
+                  {/* Header dynamique - s'adapte selon la page */}
+                  <DynamicHeader />
 
-              {children}
+                  {children}
 
-              <FloatingActions
-                whatsappPhone=""
-                whatsappMessage="Bonjour, je souhaite en savoir plus sur vos prestations."
-                email=""
-              />
+                  <FloatingActions
+                    whatsappPhone=""
+                    whatsappMessage="Bonjour, je souhaite en savoir plus sur vos prestations."
+                    email=""
+                  />
 
-              <FloatingNavMenu
-                whatsappPhone="+22370000000"
-                whatsappMessage="Bonjour, je souhaite en savoir plus sur vos prestations."
-              />
+                  <FloatingNavMenu
+                    whatsappPhone="+22370000000"
+                    whatsappMessage="Bonjour, je souhaite en savoir plus sur vos prestations."
+                  />
 
-              {/* Footer dynamique avec contacts et réseaux sociaux */}
-              <Footer />
-            </div>
-          </InteractiveBackground>
+                  {/* Footer dynamique avec contacts et réseaux sociaux */}
+                  <Footer />
+                </div>
+              </InteractiveBackground>
+            )}
+          </>
         )}
       </body>
     </html>

@@ -26,6 +26,8 @@ import {
   Tag
 } from "lucide-react";
 import Image from "next/image";
+import { fixImageUrl } from "@/lib/api";
+
 
 interface Article {
   id: number;
@@ -71,6 +73,7 @@ export default function AdminArticles() {
     excerpt: "",
     tags: "",
     is_featured: false,
+    featured_image: null as File | null,
     article_card_background_color: "#FFFFFF",
     article_title_color: "#1F2937",
     article_excerpt_color: "#6B7280",
@@ -101,7 +104,13 @@ export default function AdminArticles() {
       if (!response.ok) throw new Error('Erreur lors du chargement');
       
       const data = await response.json();
-      setArticles(data.results || data);
+      const rawArticles = data.results || data;
+      const fixedArticles = Array.isArray(rawArticles) ? 
+        rawArticles.map((article: Article) => ({
+          ...article,
+          featured_image: article.featured_image ? fixImageUrl(article.featured_image) : null
+        })) : [];
+      setArticles(fixedArticles);
     } catch (error) {
       console.error('Erreur:', error);
       setError('Impossible de charger les articles');
@@ -118,6 +127,7 @@ export default function AdminArticles() {
       excerpt: "",
       tags: "",
       is_featured: false,
+      featured_image: null,
       article_card_background_color: "#FFFFFF",
       article_title_color: "#1F2937",
       article_excerpt_color: "#6B7280",
@@ -135,6 +145,7 @@ export default function AdminArticles() {
       excerpt: article.excerpt,
       tags: Array.isArray(article.tags) ? article.tags.join(', ') : '',
       is_featured: article.is_featured,
+      featured_image: null,
       article_card_background_color: article.article_card_background_color || "#FFFFFF",
       article_title_color: article.article_title_color || "#1F2937",
       article_excerpt_color: article.article_excerpt_color || "#6B7280",
@@ -151,26 +162,30 @@ export default function AdminArticles() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
       let response;
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('excerpt', formData.excerpt);
+      formDataToSend.append('content', formData.content);
+      formDataToSend.append('tags', formData.tags);
+      formDataToSend.append('is_featured', String(formData.is_featured));
+      formDataToSend.append('article_card_background_color', formData.article_card_background_color);
+      formDataToSend.append('article_title_color', formData.article_title_color);
+      formDataToSend.append('article_excerpt_color', formData.article_excerpt_color);
+      formDataToSend.append('article_tag_background_color', formData.article_tag_background_color);
+      formDataToSend.append('article_tag_text_color', formData.article_tag_text_color);
+      
+      if (formData.featured_image) {
+        formDataToSend.append('featured_image', formData.featured_image);
+      }
+
       if (editingArticle) {
         // Update
         response = await fetch(`${apiUrl}/api/admin/articles/${editingArticle.id}/`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            title: formData.title,
-            excerpt: formData.excerpt,
-            content: formData.content,
-            tags: formData.tags,
-            is_featured: formData.is_featured,
-            article_card_background_color: formData.article_card_background_color,
-            article_title_color: formData.article_title_color,
-            article_excerpt_color: formData.article_excerpt_color,
-            article_tag_background_color: formData.article_tag_background_color,
-            article_tag_text_color: formData.article_tag_text_color,
-          }),
+          body: formDataToSend,
         });
       } else {
         // Create
@@ -178,20 +193,8 @@ export default function AdminArticles() {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            title: formData.title,
-            excerpt: formData.excerpt,
-            content: formData.content,
-            tags: formData.tags,
-            is_featured: formData.is_featured,
-            article_card_background_color: formData.article_card_background_color,
-            article_title_color: formData.article_title_color,
-            article_excerpt_color: formData.article_excerpt_color,
-            article_tag_background_color: formData.article_tag_background_color,
-            article_tag_text_color: formData.article_tag_text_color,
-          }),
+          body: formDataToSend,
         });
       }
 
@@ -389,6 +392,7 @@ export default function AdminArticles() {
                             alt={article.title}
                             fill
                             className="object-cover"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                           />
                         </div>
                       ) : (
@@ -492,7 +496,9 @@ export default function AdminArticles() {
 
       {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] lg:max-w-6xl max-h-[90vh] overflow-hidden p-0">
+          <div className="flex flex-col lg:flex-row max-h-[90vh]">
+          <div className="flex-1 overflow-y-auto p-6 lg:max-w-[60%]">
           <DialogHeader>
             <DialogTitle>
               {editingArticle ? "Modifier l'article" : "Créer un nouvel article"}
@@ -543,6 +549,29 @@ export default function AdminArticles() {
                 onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
                 placeholder="éducation, formation, coaching..."
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="featured_image">Image à la une</Label>
+              <Input
+                id="featured_image"
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    setFormData({ ...formData, featured_image: e.target.files[0] });
+                  }
+                }}
+              />
+              {(formData.featured_image || (editingArticle && editingArticle.featured_image)) && (
+                <div className="mt-2 relative h-32 w-full rounded-md overflow-hidden bg-gray-50 border">
+                  <img
+                    src={formData.featured_image ? URL.createObjectURL(formData.featured_image) : (editingArticle?.featured_image || '')}
+                    alt="Aperçu"
+                    className="object-contain w-full h-full"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex items-center space-x-2">
@@ -664,6 +693,83 @@ export default function AdminArticles() {
               </Button>
             </DialogFooter>
           </form>
+          </div>
+
+          {/* Right Panel - Live Preview */}
+          <div className="hidden lg:flex lg:w-[40%] bg-slate-900/60 border-l border-slate-700 overflow-y-auto p-6 flex-col justify-center items-center gap-3">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold self-start">
+              Aperçu carte article
+            </Label>
+            <p className="text-[11px] text-muted-foreground self-start mb-2">
+              Rendu fidèle à la page /blog
+            </p>
+            <div
+              className="w-full max-w-[280px] rounded-xl border border-border/70 overflow-hidden shadow-md transition-all duration-300"
+              style={{ backgroundColor: formData.article_card_background_color }}
+            >
+              {/* Image à la une */}
+              {(formData.featured_image || (editingArticle && editingArticle.featured_image)) ? (
+                <div className="aspect-video w-full overflow-hidden">
+                  <img
+                    src={formData.featured_image ? URL.createObjectURL(formData.featured_image) : (editingArticle?.featured_image || '')}
+                    alt="Aperçu"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="aspect-video w-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
+                  <span className="text-slate-500 text-xs">Aucune image</span>
+                </div>
+              )}
+              <div className="p-4 space-y-2">
+                {/* Tags */}
+                {formData.tags && (
+                  <div className="flex flex-wrap gap-1">
+                    {formData.tags.split(',').slice(0, 3).map((tag, i) => (
+                      <span
+                        key={i}
+                        className="px-2 py-0.5 text-[10px] font-semibold rounded-full"
+                        style={{
+                          backgroundColor: formData.article_tag_background_color,
+                          color: formData.article_tag_text_color
+                        }}
+                      >
+                        {tag.trim()}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {/* Titre */}
+                <h3
+                  className="text-sm font-bold leading-snug line-clamp-2"
+                  style={{ color: formData.article_title_color }}
+                >
+                  {formData.title || "Titre de l'article"}
+                </h3>
+                {/* Extrait */}
+                <p
+                  className="text-xs leading-relaxed line-clamp-3"
+                  style={{ color: formData.article_excerpt_color }}
+                >
+                  {formData.excerpt || "L'extrait de l'article apparaît ici. Il est limité à 3 lignes pour ne pas surcharger la carte."}
+                </p>
+                {/* Footer carte */}
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[10px] opacity-50" style={{ color: formData.article_excerpt_color }}>
+                    {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                  <span
+                    className="text-[10px] font-semibold"
+                    style={{ color: formData.article_tag_background_color }}
+                  >
+                    Lire la suite →
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          </div>
         </DialogContent>
       </Dialog>
     </div>

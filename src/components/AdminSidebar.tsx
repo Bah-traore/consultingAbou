@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard, 
@@ -16,8 +17,7 @@ import {
   Settings,
   LogOut,
   Menu,
-  X,
-  Activity
+  X
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -63,8 +63,15 @@ export function AdminSidebar({ onLogout }: AdminSidebarProps) {
           {/* Logo Area */}
           <div className="p-6 border-b border-slate-700 bg-slate-800">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Activity className="h-6 w-6 text-white" />
+              <div className="relative w-10 h-10 bg-white rounded-lg overflow-hidden border border-slate-700 flex-shrink-0">
+                <Image
+                  src="/img/Abou%20consulting%20transparent.webp"
+                  alt="Abou BAH Consulting"
+                  fill
+                  sizes="40px"
+                  className="object-contain p-1"
+                  priority
+                />
               </div>
               <div>
                 <h1 className="text-xl font-bold">Admin Panel</h1>
