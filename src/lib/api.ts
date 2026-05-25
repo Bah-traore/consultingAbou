@@ -115,11 +115,19 @@ export async function apiGet<T>(endpoint: string, options?: FetchOptions): Promi
   const response = await apiFetch(endpoint, { ...options, method: 'GET' });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }));
-    throw new Error(errorData.message || `Erreur HTTP ${response.status}`);
+    const errorText = await response.text().catch(() => '');
+    let errorMessage = `Erreur HTTP ${response.status}`;
+    try {
+      if (errorText) {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorMessage;
+      }
+    } catch (e) {}
+    throw new Error(errorMessage);
   }
   
-  return response.json();
+  const text = await response.text();
+  return text ? JSON.parse(text) : (null as unknown as T);
 }
 
 /**
@@ -134,8 +142,15 @@ export async function apiPost<T>(endpoint: string, data?: any, options?: FetchOp
   });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }));
-    throw new Error(errorData.message || `Erreur HTTP ${response.status}`);
+    const errorText = await response.text().catch(() => '');
+    let errorMessage = `Erreur HTTP ${response.status}`;
+    try {
+      if (errorText) {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorMessage;
+      }
+    } catch (e) {}
+    throw new Error(errorMessage);
   }
   
   // Pour les réponses sans contenu (204), retourner null
@@ -143,7 +158,8 @@ export async function apiPost<T>(endpoint: string, data?: any, options?: FetchOp
     return null as unknown as T;
   }
   
-  return response.json();
+  const text = await response.text();
+  return text ? JSON.parse(text) : (null as unknown as T);
 }
 
 /**
@@ -158,11 +174,19 @@ export async function apiPut<T>(endpoint: string, data: any, options?: FetchOpti
   });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }));
-    throw new Error(errorData.message || `Erreur HTTP ${response.status}`);
+    const errorText = await response.text().catch(() => '');
+    let errorMessage = `Erreur HTTP ${response.status}`;
+    try {
+      if (errorText) {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorMessage;
+      }
+    } catch (e) {}
+    throw new Error(errorMessage);
   }
   
-  return response.json();
+  const text = await response.text();
+  return text ? JSON.parse(text) : (null as unknown as T);
 }
 
 /**
@@ -177,11 +201,19 @@ export async function apiPatch<T>(endpoint: string, data: any, options?: FetchOp
   });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }));
-    throw new Error(errorData.message || `Erreur HTTP ${response.status}`);
+    const errorText = await response.text().catch(() => '');
+    let errorMessage = `Erreur HTTP ${response.status}`;
+    try {
+      if (errorText) {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorMessage;
+      }
+    } catch (e) {}
+    throw new Error(errorMessage);
   }
   
-  return response.json();
+  const text = await response.text();
+  return text ? JSON.parse(text) : (null as unknown as T);
 }
 
 /**
@@ -191,8 +223,15 @@ export async function apiDelete<T>(endpoint: string, options?: FetchOptions): Pr
   const response = await apiFetch(endpoint, { ...options, method: 'DELETE' });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }));
-    throw new Error(errorData.message || `Erreur HTTP ${response.status}`);
+    const errorText = await response.text().catch(() => '');
+    let errorMessage = `Erreur HTTP ${response.status}`;
+    try {
+      if (errorText) {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorMessage;
+      }
+    } catch (e) {}
+    throw new Error(errorMessage);
   }
   
   // Pour les réponses sans contenu (204), retourner null
@@ -200,7 +239,8 @@ export async function apiDelete<T>(endpoint: string, options?: FetchOptions): Pr
     return null as unknown as T;
   }
   
-  return response.json();
+  const text = await response.text();
+  return text ? JSON.parse(text) : (null as unknown as T);
 }
 
 // Exporter l'URL de base pour utilisation directe si nécessaire
@@ -370,7 +410,7 @@ export interface Temoignage {
   
   // Customization
   CUSTOMIZATION: {
-    GET: '/api/admin/customization/',
+    GET: '/api/customization/',
     UPDATE: (id: number) => `/api/admin/customization/${id}/`,
   },
 } as const;
