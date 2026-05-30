@@ -759,17 +759,17 @@ export default function AdminSlides() {
               </div>
             </div>
 
-            {/* Section Personnalisation visuelle du slide */}
+            {/* Section Apparence du slide */}
             <div className="bg-slate-800/50 p-4 rounded-lg space-y-4 border border-slate-700">
               <div className="flex items-center gap-2 mb-2">
                 <span className="h-2 w-2 rounded-full bg-blue-500"></span>
-                <Label className="text-sm font-semibold">Personnalisation visuelle du slide</Label>
+                <Label className="text-sm font-semibold">Apparence du slide</Label>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Couleur de fond du slide */}
                 <div className="space-y-2">
-                  <Label htmlFor="slide_background_color">Couleur de fond (sans image)</Label>
+                  <Label htmlFor="slide_background_color">Couleur d'arrière-plan</Label>
                   <div className="flex gap-2">
                     <Input
                       id="slide_background_color"
@@ -824,22 +824,42 @@ export default function AdminSlides() {
                   </div>
                 </div>
 
-                {/* Couleur de l'overlay */}
+                {/* Voile sur l'image */}
                 <div className="space-y-2">
-                  <Label htmlFor="slide_overlay_color">Overlay sur image</Label>
-                  <Input
-                    id="slide_overlay_color"
-                    type="text"
-                    value={formData.slide_overlay_color}
-                    onChange={(e) => setFormData({ ...formData, slide_overlay_color: e.target.value })}
-                    placeholder="rgba(0, 0, 0, 0.6)"
-                    className="text-sm"
-                  />
+                  <Label htmlFor="slide_overlay_color">Voile sur l'image</Label>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Transparent</span>
+                      <span className="font-semibold text-sm text-foreground">
+                        {Math.round(parseFloat(formData.slide_overlay_color?.match(/[\d.]+(?=\))/)?.[0] || '0.6') * 100)}%
+                      </span>
+                      <span>Sombre</span>
+                    </div>
+                    <input
+                      id="slide_overlay_color"
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={Math.round(parseFloat(formData.slide_overlay_color?.match(/[\d.]+(?=\))/)?.[0] || '0.6') * 100)}
+                      onChange={(e) => {
+                        const opacity = parseInt(e.target.value) / 100;
+                        setFormData({ ...formData, slide_overlay_color: `rgba(0, 0, 0, ${opacity})` });
+                      }}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                      style={{
+                        background: `linear-gradient(to right, transparent, rgba(0, 0, 0, 1))`,
+                      }}
+                    />
+                    <div
+                      className="w-full h-6 rounded-md border border-slate-600"
+                      style={{ backgroundColor: formData.slide_overlay_color || 'rgba(0, 0, 0, 0.6)' }}
+                    />
+                  </div>
                 </div>
 
-                {/* Couleur de fond du contenu */}
+                {/* Fond de la zone de texte */}
                 <div className="space-y-2">
-                  <Label htmlFor="slide_content_background_color">Fond du conteneur texte</Label>
+                  <Label htmlFor="slide_content_background_color">Fond de la zone de texte</Label>
                   <Input
                     id="slide_content_background_color"
                     type="text"
@@ -850,9 +870,9 @@ export default function AdminSlides() {
                   />
                 </div>
 
-                {/* Couleur de bordure */}
+                {/* Couleur du contour */}
                 <div className="space-y-2">
-                  <Label htmlFor="slide_content_border_color">Couleur de bordure</Label>
+                  <Label htmlFor="slide_content_border_color">Couleur du contour</Label>
                   <div className="flex gap-2">
                     <Input
                       id="slide_content_border_color"
@@ -869,9 +889,9 @@ export default function AdminSlides() {
                   </div>
                 </div>
 
-                {/* Rayon de bordure */}
+                {/* Arrondi des coins */}
                 <div className="space-y-2">
-                  <Label htmlFor="slide_content_border_radius">Rayon de bordure (px)</Label>
+                  <Label htmlFor="slide_content_border_radius">Arrondi des coins</Label>
                   <Input
                     id="slide_content_border_radius"
                     type="number"
@@ -882,9 +902,9 @@ export default function AdminSlides() {
                   />
                 </div>
 
-                {/* Padding du conteneur */}
+                {/* Espace intérieur */}
                 <div className="space-y-2">
-                  <Label htmlFor="slide_content_padding">Padding (px)</Label>
+                  <Label htmlFor="slide_content_padding">Espace intérieur</Label>
                   <Input
                     id="slide_content_padding"
                     type="number"
@@ -904,7 +924,7 @@ export default function AdminSlides() {
                     onChange={(e) => setFormData({ ...formData, slide_show_border: e.target.checked })}
                     className="h-4 w-4"
                   />
-                  <Label htmlFor="slide_show_border">Afficher la bordure du conteneur</Label>
+                  <Label htmlFor="slide_show_border">Afficher le contour de la zone de texte</Label>
                 </div>
               </div>
             </div>
@@ -939,11 +959,11 @@ export default function AdminSlides() {
               </div>
             </div>
 
-            {/* Section Dispositifs de texte additionnels */}
+            {/* Section Contenu supplémentaire */}
             <div className="bg-emerald-800/50 p-4 rounded-lg space-y-4 border border-emerald-700">
               <div className="flex items-center gap-2 mb-2">
                 <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-                <Label className="text-sm font-semibold">Dispositifs de texte additionnels</Label>
+                <Label className="text-sm font-semibold">Contenu supplémentaire</Label>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
